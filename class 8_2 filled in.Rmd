@@ -41,7 +41,6 @@ mod_plot(boxOfficeModel, data=filmData)
 # To assess the success of our model, let's look at how well
 # it predicts Oscar success.  First we pull the predicted logit
 # scores out of our favoured model.
-oscarLogits = augment(boxOfficeModel, filmData)
 
 ggplot(data=oscarLogits, aes(x=BoxOffice, y=.fitted)) + geom_point()
 
@@ -58,6 +57,8 @@ binnedplot(oscarLogits$.fitted ,oscarLogits$.resid,
 
 mod_plot(boxOfficeModel)
 
+oscarLogits = predict(boxOfficeModel, data=filmData)
+
 # Now we can use R's handy ifelse command to set a new variable
 # "oscarPredictions" to 1 if the logit score is greater than 0,
 # and to 0 if the logit score is lower than 0.  Recall that a 
@@ -65,7 +66,7 @@ mod_plot(boxOfficeModel)
 oscarPredictions = ifelse(oscarLogits > 0,1,0)
 
 # Making a table of actual v. predicted Oscar success shows us
-# that our model gets 215 films right and 85 films wrong.
+# that our model gets 205 films right and 95 films wrong.
 # Better than guessing though!
 table(oscarPredictions,filmData$Oscar)
 

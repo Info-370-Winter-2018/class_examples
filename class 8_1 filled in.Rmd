@@ -5,7 +5,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 filmData = read.table("filmData.txt",header=T)
-#install.packages("arm")
+install.packages("arm")
 library(arm)
 library(statisticalModeling)
 library(mosaicModel)
@@ -35,66 +35,26 @@ boxOfficeModel <- glm ( Oscar ~ BoxOffice, data=filmData, family=binomial(link="
 # and plots the probability
 mod_plot(boxOfficeModel, data=filmData)
 
-
 ```
 ```{r}
-# To assess the success of our model, let's look at how well
-# it predicts Oscar success.  First we pull the predicted logit
-# scores out of our favoured model.
-oscarLogits = augment(boxOfficeModel, filmData)
-
-ggplot(data=oscarLogits, aes(x=BoxOffice, y=.fitted)) + geom_point()
-
-ggplot(data=oscarLogits, aes(x=BoxOffice, y=.resid)) + geom_point()
-
-hist(oscarLogits$.resid )
-
-
-# make residuals plot
-binnedplot(oscarLogits$.fitted ,oscarLogits$.resid,
-    xlab="Expected Values", ylab="Average residual", 
-    main="Binned residual plot", 
-    cex.pts=0.8, col.pts=1, col.int="gray")
-
-mod_plot(boxOfficeModel)
-
-# Now we can use R's handy ifelse command to set a new variable
-# "oscarPredictions" to 1 if the logit score is greater than 0,
-# and to 0 if the logit score is lower than 0.  Recall that a 
-# logit score of 0 corresponds to a probability of 0.5.
-oscarPredictions = ifelse(oscarLogits > 0,1,0)
-
-# Making a table of actual v. predicted Oscar success shows us
-# that our model gets 215 films right and 85 films wrong.
-# Better than guessing though!
-table(oscarPredictions,filmData$Oscar)
-
-
-
 # Now fit the full model, i.e., predicting a film's Oscar 
 # winning chances based on all five of the available 
 # predictor variables.
 fullModel = glm( Oscar ~ BoxOffice + Budget + Country + Critics + Length, data = filmData, family=binomial(link="logit"))
 summary(fullModel)
 
-fulloscarLogits = augment(fullModel, filmData)
-
 exp(fullModel$coefficients)
 
-mod_plot(boxOfficeModel)
 mod_plot(fullModel)
 
-binnedplot(fulloscarLogits$.fitted ,fulloscarLogits$.resid,
-    xlab="Expected Values", ylab="Average residual", 
-    main="Binned residual plot", 
-    cex.pts=0.8, col.pts=1, col.int="gray")
+# use mod_cv to compare the models
+mod_cv(fullModel, boxOfficeModel)
 
-binnedplot(oscarLogits$.fitted ,oscarLogits$.resid,
-    xlab="Expected Values", ylab="Average residual", 
-    main="Binned residual plot", 
-    cex.pts=0.8, col.pts=1, col.int="gray")
-exp(fullModel$coefficients)
-exp(boxOfficeModel$coefficients)
+
+# Here's another dataset with a logistic model
+mod2 <- glm(married ~ age + sex * sector,
+data = mosaicData::CPS85, family=binomial(link="logit"))
+
 # plot the model and interpret it, what do the visualizations
 # say about the relationships
 
@@ -122,24 +82,7 @@ oscarPredictions = ifelse(oscarLogits > 0,1,0)
 table(oscarPredictions,Oscar)
 
 # Try different cutoffs for the logit score, search over them
-# to find one with better performance
-install.packages("ROCR")
-library(ROCR)
-
-prob <- predict(fullModel, newdata=filmData, type="response")
-pred <- prediction(prob, filmData$Oscar)
-perf <- performance(pred, measure = "tpr", x.measure = "fpr")
-# I know, the following code is bizarre. Just go with it.
-auc <- performance(pred, measure = "auc")
-auc <- auc@y.values[[1]]
-
-roc.data <- data.frame(fpr=unlist(perf@x.values),
-                       tpr=unlist(perf@y.values),
-                       model="GLM")
-ggplot(roc.data, aes(x=fpr, ymin=0, ymax=tpr)) +
-    geom_ribbon(alpha=0.2) +
-    geom_line(aes(y=tpr)) +
-    ggtitle(paste0("ROC Curve w/ AUC=", auc))
+# to find one with better performance 
 
 ```
 # Residuals for logistic regression

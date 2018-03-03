@@ -41,7 +41,7 @@ mod_plot(boxOfficeModel, data=filmData)
 # To assess the success of our model, let's look at how well
 # it predicts Oscar success.  First we pull the predicted logit
 # scores out of our favoured model.
-
+oscarLogits = augment(boxOfficeModel, data=filmData)
 ggplot(data=oscarLogits, aes(x=BoxOffice, y=.fitted)) + geom_point()
 
 ggplot(data=oscarLogits, aes(x=BoxOffice, y=.resid)) + geom_point()
@@ -57,20 +57,20 @@ binnedplot(oscarLogits$.fitted ,oscarLogits$.resid,
 
 mod_plot(boxOfficeModel)
 
-oscarLogits = predict(boxOfficeModel, data=filmData)
+#oscarLogits = predict(boxOfficeModel, data=filmData)
 
 # Now we can use R's handy ifelse command to set a new variable
 # "oscarPredictions" to 1 if the logit score is greater than 0,
 # and to 0 if the logit score is lower than 0.  Recall that a 
 # logit score of 0 corresponds to a probability of 0.5.
-oscarPredictions = ifelse(oscarLogits > 0,1,0)
+oscarPredictions = ifelse(oscarLogits$.fitted > 0,1,0)
 
 # Making a table of actual v. predicted Oscar success shows us
 # that our model gets 205 films right and 95 films wrong.
 # Better than guessing though!
 table(oscarPredictions,filmData$Oscar)
 
-
+oscarLogits = augment(boxOfficeModel, data=filmData)
 
 # Now fit the full model, i.e., predicting a film's Oscar 
 # winning chances based on all five of the available 
@@ -109,21 +109,24 @@ exp(boxOfficeModel$coefficients)
 # To assess the success of our model, let's look at how well
 # it predicts Oscar success.  First we pull the predicted logit
 # scores out of our favoured model.
-oscarLogits = predict(fullModel)
+# oscarLogits = predict(fullModel)
 
 # Now we can use R's handy ifelse command to set a new variable
 # "oscarPredictions" to 1 if the logit score is greater than 0,
 # and to 0 if the logit score is lower than 0.  Recall that a 
 # logit score of 0 corresponds to a probability of 0.5.
-oscarPredictions = ifelse(oscarLogits > 0,1,0)
+oscarPredictions = ifelse(fulloscarLogits$.fitted  > 0,1,0)
 
 # Making a table of actual v. predicted Oscar success shows us
-# that our model gets 215 films right and 85 films wrong.
+# that our model gets 217 films right and 83 films wrong.
 # Better than guessing though!
-table(oscarPredictions,Oscar)
+table(oscarPredictions,filmData$Oscar)
 
 # Try different cutoffs for the logit score, search over them
 # to find one with better performance
+
+# The ROC curve basically does that cutoff checking many times
+# showing true positive rate (tpr) and false positive rate (fpr)
 install.packages("ROCR")
 library(ROCR)
 

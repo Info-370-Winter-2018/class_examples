@@ -121,7 +121,7 @@ ggplot(data = results, aes(x=choice, y=profit, group=choice)) + geom_boxplot() +
 
 
 
-# use sales model fit on your simulated data
+# you can imagine replacing expected sales with a model fit on some data
 profit_monte_carlo_given_choice <- function(ads_to_buy){
   # the price of ads fluctuates with the market
   # we model these price fluctuations with a random value

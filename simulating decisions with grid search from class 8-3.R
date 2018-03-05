@@ -1,18 +1,3 @@
-simulate_outcome(ads_to_buy){
-  ad = 9 + runif(1,-2,6)
-  if (person_buys){
-    product_cost = rnorm(1, 5, .2)
-    cost = ad + product_cost
-    revenue = 20
-  } else {
-    cost = ad 
-    revenue = 0
-  }
-  
-  profit = revenue - cost
-  
-}
-
 
 profit_monte_carlo_given_choice <- function(ads_to_buy){
   # the price of ads fluctuates with the market

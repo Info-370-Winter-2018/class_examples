@@ -13,8 +13,10 @@ MergeData <- function(data1, data2, key1, key2){
   #       key1 - key name in first dataset
   #       key2 - key name in second dataset
   # Returns: merged dataframe if key matches, 
-  #          otherwise print an error  
-  if (key1 = key2){
+  #          otherwise print an error 
+  
+  condition <- key1 = key2
+  if (condition){
     data.out <- join(data1,data2, by = key1)
     return(dataout)
   } else {

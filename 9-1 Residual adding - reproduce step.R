@@ -15,4 +15,5 @@ grid <- data.frame(x = seq(0, 1, length = 10))
 ag <- augment(m1)
 r <- resample(1, ag)
 
-predition_plus_residual <- predict(m1, newdata=c(10)) + r
+predition_plus_residual <- predict(m1, newdata=c(10)) + 
+  r$.resid

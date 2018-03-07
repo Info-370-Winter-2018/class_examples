@@ -45,13 +45,11 @@ train_refugee_food_needs <- refugee_food_needs[train_ind,] # get training data
 final_test_refugee_food_needs <- refugee_food_needs[-train_ind,] # get test data
 
 
-
-
 # we'll train model on the data, then use it
 # to simulate giving food with the testing data
 
 # here's an example not with cross validation
-lm_model <- lm(food_needed ~ family_size, data = train_refugee_food_needs)
+lm_model <- lm(?)
 
 simulate_outcomes <- function(policy, model, rows_to_simulate_with) {
   browser()
@@ -63,10 +61,10 @@ simulate_outcomes <- function(policy, model, rows_to_simulate_with) {
     
     # simulate outcome of the decision
     with_decisions <- with_decisions %>% mutate(
-        alive = ifelse(.fitted>=food_needed, 1, 0)
+        alive = ?
     )
-    dead_families <- with_decisions %>% filter(alive == 0)
-    outcomes <- outcomes %>% mutate (num_deaths=sum(dead_families$family_size))
+    dead_families <- with_decisions %>% filter(alive == ?)
+    outcomes <- outcomes %>% mutate (num_deaths=sum(dead_families$?))
   }
   
   outcomes
@@ -78,7 +76,7 @@ simulate_outcomes("linear_model_method", lm_model, train_refugee_food_needs)
 
 ```{r}
 
-residuals <- augment(lm_model)
+residuals <- ?
 simulate_outcomes <- function(policy, model, rows_to_simulate_with) {
   outcomes <- tribble( ~policy, ~num_deaths) %>% 
               add_row(policy=policy)
@@ -99,7 +97,7 @@ simulate_outcomes <- function(policy, model, rows_to_simulate_with) {
     
     # simulate outcome of the decision
     with_decisions <- with_decisions %>% mutate(
-        food_to_give = .fitted + resample(x=residuals$.resid, n=1),
+        food_to_give = .fitted + <add residual here>,
         alive = ifelse(food_to_give>=food_needed, 1, 0)
     )
     dead_families <- with_decisions %>% filter(alive == 0)

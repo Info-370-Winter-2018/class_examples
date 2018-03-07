@@ -1,0 +1,156 @@
+---
+title: "Class 9-3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(broom)
+library(mosaic)
+library(caret)
+
+set.seed(370)
+# generate dataset
+
+# how much food does each family need per week
+# 5lbs per person
+# with some random variation based - say different ppl need different amounts
+
+family_sizes = c(1,2,2,2,3,3,3,4,4,5,5,5,6)
+refugee_food_needs <- tibble::data_frame(
+  family_size = sample(family_sizes, n=100), #sort(runif(100)),
+  food_needed = 5*family_size + rnorm(length(family_size), 0, 1)
+)
+
+plot(refugee_food_needs)
+```
+## Single model version with simulation
+
+
+
+
+
+```{r}
+
+# select outcome variable
+outcome <- refugee_food_needs %>% dplyr::select(food_needed)
+
+# split testing and training data
+split_proportion = 0.8 # specify proportion of data used for training
+ 
+train_ind <- createDataPartition(outcome$food_needed, p = split_proportion, list = FALSE)
+train_refugee_food_needs <- refugee_food_needs[train_ind,] # get training data
+final_test_refugee_food_needs <- refugee_food_needs[-train_ind,] # get test data
+
+
+
+
+# we'll train model on the data, then use it
+# to simulate giving food with the testing data
+
+# here's an example not with cross validation
+lm_model <- lm(food_needed ~ family_size, data = train_refugee_food_needs)
+
+simulate_outcomes <- function(policy, model, rows_to_simulate_with) {
+  browser()
+  outcomes <- tribble( ~policy, ~num_deaths) %>% 
+              add_row(policy=policy)
+  
+  if(policy == "linear_model_method"){
+    with_decisions <- augment(model, newdata=rows_to_simulate_with)
+    
+    # simulate outcome of the decision
+    with_decisions <- with_decisions %>% mutate(
+        alive = ifelse(.fitted>=food_needed, 1, 0)
+    )
+    dead_families <- with_decisions %>% filter(alive == 0)
+    outcomes <- outcomes %>% mutate (num_deaths=sum(dead_families$family_size))
+  }
+  
+  outcomes
+}
+
+simulate_outcomes("linear_model_method", lm_model, train_refugee_food_needs)
+```
+## What if we add the residual?
+
+```{r}
+
+residuals <- augment(lm_model)
+simulate_outcomes <- function(policy, model, rows_to_simulate_with) {
+  outcomes <- tribble( ~policy, ~num_deaths) %>% 
+              add_row(policy=policy)
+  
+  if(policy == "linear_model_method"){
+    with_decisions <- augment(model, newdata=rows_to_simulate_with)
+    
+    # simulate outcome of the decision
+    with_decisions <- with_decisions %>% mutate(
+        alive = ifelse(.fitted>=food_needed, 1, 0)
+    )
+    dead_families <- with_decisions %>% filter(alive == 0)
+    outcomes <- outcomes %>% mutate (num_deaths=sum(dead_families$family_size))
+  }
+  
+  if(policy == "linear_model_method_with_residual"){
+    with_decisions <- augment(model, newdata=rows_to_simulate_with)
+    
+    # simulate outcome of the decision
+    with_decisions <- with_decisions %>% mutate(
+        food_to_give = .fitted + resample(x=residuals$.resid, n=1),
+        alive = ifelse(food_to_give>=food_needed, 1, 0)
+    )
+    dead_families <- with_decisions %>% filter(alive == 0)
+    outcomes <- outcomes %>% mutate (num_deaths=sum(dead_families$family_size))
+  }
+  
+  outcomes
+}
+
+bind_rows(
+  simulate_outcomes("linear_model_method", lm_model, train_refugee_food_needs),
+simulate_outcomes("linear_model_method_with_residual", lm_model, train_refugee_food_needs))
+
+```
+
+## Extending cross-validation process to include search for decision
+
+```{r}
+#Randomly shuffle the order of the rows in the data
+train_refugee_food_needs<-train_refugee_food_needs[sample(nrow(train_refugee_food_needs)),]
+
+#Create 10 equally size folds within the training data
+folds <- cut(seq(1,nrow(train_refugee_food_needs)),breaks=10,labels=FALSE)
+
+
+# pattern is choice variables, outcome variables, c/v fold number
+cv_outcomes <- tribble( ~policy, ~num_deaths, ~cv_fold_id)
+
+#Perform 10 fold cross validation
+for(i in 1:10){
+    #Segement your data by fold using the which() function 
+    testIndexes <- which(folds==i,arr.ind=TRUE)
+    cv_testData <- train_refugee_food_needs[testIndexes, ]
+    cv_trainData <- train_refugee_food_needs[-testIndexes, ]
+    
+    #Use the cv test and train data partitions
+    # first fit model 
+    # then simulate
+    
+    #Add outcomes to table 
+    cv_outcomes <-  bind_rows(cv_outcomes,new)
+}
+
+
+# visualize outcomes
+
+#ggplot() + facet_grid(~ cv_fold_id)
+
+
+# now at the end of your analysis, run on your overall test data
+# that we held back from the beginning
+
+```
+

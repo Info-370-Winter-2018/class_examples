@@ -4,13 +4,14 @@ profit_monte_carlo_given_choice <- function(ads_to_buy){
   # we model these price fluctuations with a random value
   ad_cost <- 9 + runif(1, -2, 6)
   number_of_ads <- ads_to_buy
-  expected_sales_per_ad <- 12*number_of_ads
+  expected_sales <- 12*number_of_ads
   # instead, we could imagine a model for expected sales
-  # residual_term <- resample(x=your_models_residuals, size=1)
+  # residual_term <- resample(x=your_models_residuals, size=)
   # expected_sales_per_ad <- predict(model, 
   #             newdata=(tibble for this one simulation)) + residual_term
+  # expected_sales <- expected_sales_per_ad*number_of_ads
   
-  profit <- expected_sales_per_ad - (ad_cost*number_of_ads)
+  profit <- expected_sales - (ad_cost*number_of_ads)
   return(profit)
 }
 

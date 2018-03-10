@@ -15,6 +15,10 @@ profit_monte_carlo_given_choice <- function(ads_to_buy){
   return(profit)
 }
 
+
+# example showing why we shouldn't just use the point estimate/prediction.
+# first we see that the choice looks like we should just buy lots of ads
+#   because the mean is going up
 results <- tribble (~choice, ~mean_profit)
 
 for (ads_to_buy in seq(from=0, to=20, by=1)){
@@ -27,7 +31,8 @@ for (ads_to_buy in seq(from=0, to=20, by=1)){
 
 plot(results)
 
-
+# by showing the distribution of the outcomes, we see a different picture.
+# this shows the distributions (with box plots - you could use violin plots to show the full distributions)
 results <- tribble (~choice, ~profit, ~mean_profit)
 
 for (ads_to_buy in seq(from=0, to=20, by=1)){

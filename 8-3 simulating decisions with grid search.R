@@ -5,8 +5,9 @@ profit_monte_carlo_given_choice <- function(ads_to_buy){
   ad_cost <- 9 + runif(1, -2, 6)
   number_of_ads <- ads_to_buy
   expected_sales_per_ad <- 12*number_of_ads
-  # residual_term <- resample(1, your_models_residuals)
- # expected_sales_per_ad <- predict(model, 
+  # instead, we could imagine a model for expected sales
+  # residual_term <- resample(x=your_models_residuals, size=1)
+  # expected_sales_per_ad <- predict(model, 
   #             newdata=(tibble for this one simulation)) + residual_term
   
   profit <- expected_sales_per_ad - (ad_cost*number_of_ads)
